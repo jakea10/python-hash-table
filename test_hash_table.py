@@ -1,4 +1,4 @@
-from hash_table import HashTable, BLANK
+from hash_table import HashTable
 import pytest
 
 
@@ -15,11 +15,13 @@ def test_should_report_capacity():
 
 
 def test_should_create_empty_value_slots():
-    assert HashTable(capacity=3).values == [BLANK, BLANK, BLANK]
+    assert HashTable(capacity=3).pairs == [None, None, None]
 
 
-def test_should_not_contain_none_values_when_created():
-    assert None not in HashTable(capacity=3).values
+def test_should_not_contain_none_value_when_created():
+    hash_table = HashTable(capacity=10)
+    values = [pair.value for pair in hash_table.pairs if pair]
+    assert None not in values
 
 
 @pytest.fixture
@@ -33,10 +35,10 @@ def hash_table() -> HashTable:
 
 
 def test_should_insert_key_value_pairs(hash_table: HashTable):
-    assert "world" in hash_table.values
-    assert 37 in hash_table.values
-    assert False in hash_table.values
-    assert None in hash_table.values
+    assert ("hello", "world") in hash_table.pairs
+    assert (98.6, 37) in hash_table.pairs
+    assert (True, False) in hash_table.pairs
+    assert ("key", None) in hash_table.pairs
 
     # # bypass shrink/grow tests below
     # assert len(ht) == 10
@@ -89,12 +91,12 @@ def test_should_get_value_with_default(hash_table):
 
 def test_should_delete_key_value_pair(hash_table):
     assert "hello" in hash_table
-    assert "world" in hash_table.values
+    assert ("hello", "world") in hash_table.pairs
 
     del hash_table["hello"]
 
     assert "hello" not in hash_table
-    assert "world" not in hash_table.values
+    assert ("hello", "world") not in hash_table.pairs
 
 
 def test_should_not_shrink_when_removing_elements(hash_table):
@@ -118,3 +120,10 @@ def test_should_update_value(hash_table):
     assert hash_table[True] is False
     assert hash_table["key"] is None
     assert len(hash_table) == 100
+
+
+def test_should_return_pairs(hash_table):
+    assert ("hello", "world") in hash_table.pairs
+    assert (98.6, 37) in hash_table.pairs
+    assert (True, False) in hash_table.pairs
+    assert ("key", None) in hash_table.pairs
