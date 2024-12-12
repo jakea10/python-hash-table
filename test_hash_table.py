@@ -1,5 +1,6 @@
 from hash_table import HashTable
 import pytest
+from pytest_unordered import unordered
 
 
 # def test_should_always_pass():
@@ -19,9 +20,7 @@ def test_should_create_empty_value_slots():
 
 
 def test_should_not_contain_none_value_when_created():
-    hash_table = HashTable(capacity=10)
-    values = [pair.value for pair in hash_table.pairs]
-    assert None not in values
+    assert None not in HashTable(capacity=10).values
 
 
 @pytest.fixture
@@ -39,9 +38,6 @@ def test_should_insert_key_value_pairs(hash_table: HashTable):
     assert (98.6, 37) in hash_table.pairs
     assert (True, False) in hash_table.pairs
     assert ("key", None) in hash_table.pairs
-
-    # # bypass shrink/grow tests below
-    # assert len(ht) == 10
 
 
 def test_should_not_grow_when_adding_elements():
@@ -123,10 +119,16 @@ def test_should_update_value(hash_table):
 
 
 def test_should_return_pairs(hash_table):
-    assert ("hello", "world") in hash_table.pairs
-    assert (98.6, 37) in hash_table.pairs
-    assert (True, False) in hash_table.pairs
-    assert ("key", None) in hash_table.pairs
+    assert hash_table.pairs == {
+        ("hello", "world"),
+        (98.6, 37),
+        (True, False),
+        ("key", None)
+    }
+
+
+def test_should_get_pairs_of_empty_hash_table():
+    assert HashTable(capacity=10).pairs == set()
 
 
 def test_should_return_copy_of_pairs(hash_table):
@@ -136,3 +138,43 @@ def test_should_return_copy_of_pairs(hash_table):
 
 def test_should_not_include_blank_pairs(hash_table):
     assert None not in hash_table.pairs
+
+
+def test_should_return_duplicate_values():
+    hash_table = HashTable(capacity=100)
+    hash_table["Harry"] = "Gryffindor"
+    hash_table["Draco"] = "Slytherin"
+    hash_table["Neville"] = "Gryffindor"
+    assert hash_table.values.count("Gryffindor") == 2
+
+
+def test_should_get_values(hash_table):
+    # Don't take order into account when comparing
+    assert unordered(hash_table.values) == ["world", 37, False, None]
+
+
+def test_should_get_values_of_empty_hash_table():
+    assert HashTable(capacity=100).values == []
+
+
+def test_should_return_copy_of_values(hash_table):
+    assert hash_table.values is not hash_table.values
+
+
+def test_should_get_keys(hash_table):
+    assert hash_table.keys == {"hello", 98.6, True, "key"}
+
+
+def test_should_get_keys_of_empty_hash_table():
+    assert HashTable(capacity=10).keys == set()  # empty set
+
+
+def test_should_return_copy_of_keys(hash_table):
+    assert hash_table.keys is not hash_table.keys
+
+
+def test_should_convert_to_dict(hash_table):
+    dictionary = dict(hash_table.pairs)
+    assert set(dictionary.keys()) == hash_table.keys
+    assert set(dictionary.items()) == hash_table.pairs
+    assert list(dictionary.values()) == unordered(hash_table.values)

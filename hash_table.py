@@ -53,8 +53,23 @@ class HashTable:
 
     @property
     def pairs(self):
-        return [pair for pair in self._pairs if pair]
+        return {pair for pair in self._pairs if pair}
+    
+
+    @property
+    def values(self):
+        return [pair.value for pair in self.pairs]
+    
+
+    @property
+    def keys(self):
+        return {pair.key for pair in self.pairs}
 
 
     def _index(self, key) -> int:
         return hash(key) % len(self)
+    
+
+if __name__ == "__main__":
+    # ad hoc testing
+    pass
