@@ -11,16 +11,55 @@ def test_should_create_hash_table():
     assert HashTable(capacity=100) is not None
 
 
-def test_should_report_capacity():
-    assert len(HashTable(capacity=100)) == 100
+def test_should_not_create_hash_table_with_zero_capacity():
+    with pytest.raises(ValueError):
+        HashTable(capacity=0)
+
+
+def test_should_not_create_hash_table_with_negative_capacity():
+    with pytest.raises(ValueError):
+        HashTable(capacity=-100)
+
+
+def test_should_not_create_hash_table_with_non_int_capacity():
+    args = ["one", 2.5, True]
+    for arg in args:
+        with pytest.raises(ValueError):
+            HashTable(capacity=arg)
+
+
+def test_should_report_capacity_of_empty_hash_table():
+    assert HashTable(capacity=100).capacity == 100
+
+
+def test_should_report_capacity(hash_table):
+    assert hash_table.capacity == 100
+
+
+def test_should_report_length_of_empty_hash_table():
+    hash_table = HashTable(capacity=100)
+    assert len(hash_table) == 0
+
+
+def test_should_report_length(hash_table):
+    assert len(hash_table) == 4
 
 
 def test_should_create_empty_value_slots():
-    assert HashTable(capacity=3)._pairs == [None, None, None]
+    assert HashTable(capacity=3)._slots == [None, None, None]
 
 
 def test_should_not_contain_none_value_when_created():
     assert None not in HashTable(capacity=10).values
+
+
+def test_should_insert_key_value_pairs():
+    hash_table = HashTable(capacity=100)
+    hash_table["hello"] = "world"
+    hash_table[98.6] = 37
+    hash_table[True] = False
+    hash_table["key"] = None
+    assert len(hash_table) == 4
 
 
 @pytest.fixture
@@ -33,18 +72,12 @@ def hash_table() -> HashTable:
     return sample_data
 
 
-def test_should_insert_key_value_pairs(hash_table: HashTable):
-    assert ("hello", "world") in hash_table.pairs
-    assert (98.6, 37) in hash_table.pairs
-    assert (True, False) in hash_table.pairs
-    assert ("key", None) in hash_table.pairs
+# Not applicable after refactoring how hash_table reports length
+# def test_should_not_grow_when_adding_elements():
+#     ht = HashTable(capacity=10)
+#     ht["foo"] = "bar"
 
-
-def test_should_not_grow_when_adding_elements():
-    ht = HashTable(capacity=10)
-    ht["foo"] = "bar"
-
-    assert len(ht) == 10
+#     assert len(ht) == 10
 
 
 def test_should_find_value_by_key(hash_table):
@@ -88,16 +121,19 @@ def test_should_get_value_with_default(hash_table):
 def test_should_delete_key_value_pair(hash_table):
     assert "hello" in hash_table
     assert ("hello", "world") in hash_table.pairs
+    assert len(hash_table) == 4
 
     del hash_table["hello"]
 
     assert "hello" not in hash_table
     assert ("hello", "world") not in hash_table.pairs
+    assert len(hash_table) == 3
 
 
-def test_should_not_shrink_when_removing_elements(hash_table):
-    del hash_table["hello"]
-    assert len(hash_table) == 100
+# Not applicable after refactoring how hash_table reports length
+# def test_should_not_shrink_when_removing_elements(hash_table):
+#     del hash_table["hello"]
+#     assert len(hash_table) == 100
 
 
 def test_should_raise_key_error_when_deleting(hash_table):
@@ -115,7 +151,7 @@ def test_should_update_value(hash_table):
     assert hash_table[98.6] == 37
     assert hash_table[True] is False
     assert hash_table["key"] is None
-    assert len(hash_table) == 100
+    assert len(hash_table) == 4
 
 
 def test_should_return_pairs(hash_table):
