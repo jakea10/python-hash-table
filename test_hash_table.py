@@ -214,3 +214,24 @@ def test_should_convert_to_dict(hash_table):
     assert set(dictionary.keys()) == hash_table.keys
     assert set(dictionary.items()) == hash_table.pairs
     assert list(dictionary.values()) == unordered(hash_table.values)
+
+
+def test_should_iterate_over_keys(hash_table):
+    for key in hash_table.keys:
+        assert key in ("hello", 98.6, True, "key")
+
+
+def test_should_iterate_over_values(hash_table):
+    for key in hash_table.values:
+        assert key in ("world", 37, False, None)
+
+
+def test_should_iterate_over_pairs(hash_table):
+    for key, value in hash_table.pairs:
+        assert key in hash_table.keys
+        assert value in hash_table.values
+
+
+def test_should_iterate_over_instance(hash_table):
+    for key in hash_table:
+        assert key in ("hello", 98.6, True, "key")

@@ -51,6 +51,10 @@ class HashTable:
             self._slots[self._index(key)] = None
         else:
             raise KeyError(key)
+        
+    
+    def __iter__(self):
+        yield from self.keys
     
 
     @property
@@ -79,4 +83,11 @@ class HashTable:
 
 if __name__ == "__main__":
     # ad hoc testing
-    pass
+    hash_table = HashTable(capacity=100)
+    hash_table["hello"] = "world"
+    hash_table[98.6] = 37
+    hash_table[True] = False
+    hash_table["key"] = None
+
+    for key, value in hash_table.pairs:
+        print(f"key={key}, value={value}")
