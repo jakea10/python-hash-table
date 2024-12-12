@@ -15,12 +15,12 @@ def test_should_report_capacity():
 
 
 def test_should_create_empty_value_slots():
-    assert HashTable(capacity=3).pairs == [None, None, None]
+    assert HashTable(capacity=3)._pairs == [None, None, None]
 
 
 def test_should_not_contain_none_value_when_created():
     hash_table = HashTable(capacity=10)
-    values = [pair.value for pair in hash_table.pairs if pair]
+    values = [pair.value for pair in hash_table.pairs]
     assert None not in values
 
 
@@ -127,3 +127,12 @@ def test_should_return_pairs(hash_table):
     assert (98.6, 37) in hash_table.pairs
     assert (True, False) in hash_table.pairs
     assert ("key", None) in hash_table.pairs
+
+
+def test_should_return_copy_of_pairs(hash_table):
+    # Test defensive copying
+    assert hash_table.pairs is not hash_table.pairs
+
+
+def test_should_not_include_blank_pairs(hash_table):
+    assert None not in hash_table.pairs
