@@ -235,3 +235,44 @@ def test_should_iterate_over_pairs(hash_table):
 def test_should_iterate_over_instance(hash_table):
     for key in hash_table:
         assert key in ("hello", 98.6, True, "key")
+
+
+def test_should_use_dict_literal_for_str(hash_table):
+    del hash_table["key"]  # for less permutations to check
+    assert str(hash_table) in {
+        "{'hello': 'world', 98.6: 37, True: False}",
+        "{'hello': 'world', True: False, 98.6: 37}",
+        "{98.6: 37, 'hello': 'world', True: False}",
+        "{98.6: 37, True: False, 'hello': 'world'}",
+        "{True: False, 'hello': 'world', 98.6: 37}",
+        "{True: False, 98.6: 37, 'hello': 'world'}",
+    }
+
+
+def test_should_create_hash_table_from_dict():
+    dictionary = {"hello": "world", 98.6: 37, True: False}
+    hash_table: HashTable = HashTable.from_dict(dictionary)
+
+    assert hash_table.capacity == len(dictionary) * 10
+    assert hash_table.keys == set(dictionary.keys())
+    assert hash_table.pairs == set(dictionary.items())
+    assert unordered(hash_table.values) == list(dictionary.values())
+
+
+def test_should_create_hash_table_from_dict_with_custom_capacity():
+    dictionary = {"hello": "world", 98.6: 37, True: False}
+    hash_table: HashTable = HashTable.from_dict(dictionary, 50)
+
+    assert hash_table.capacity == 50
+
+
+def test_should_have_canonical_string_representation(hash_table):
+    del hash_table["key"]  # for less permutations to check
+    assert repr(hash_table) in {
+        "HashTable.from_dict({'hello': 'world', 98.6: 37, True: False})",
+        "HashTable.from_dict({'hello': 'world', True: False, 98.6: 37})",
+        "HashTable.from_dict({98.6: 37, 'hello': 'world', True: False})",
+        "HashTable.from_dict({98.6: 37, True: False, 'hello': 'world'})",
+        "HashTable.from_dict({True: False, 'hello': 'world', 98.6: 37})",
+        "HashTable.from_dict({True: False, 98.6: 37, 'hello': 'world'})",
+    }

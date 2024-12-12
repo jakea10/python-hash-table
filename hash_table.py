@@ -57,6 +57,22 @@ class HashTable:
         yield from self.keys
     
 
+    def __str__(self):
+        pairs = []
+        for key, value in self.pairs:
+            pairs.append(f"{key!r}: {value!r}")
+        return "{" + ", ".join(pairs) + "}"
+    
+
+    def __repr__(self):
+        cls = self.__class__.__name__
+        return f"{cls}.from_dict({str(self)})"
+    
+
+    def _index(self, key) -> int:
+        return hash(key) % self.capacity
+    
+
     @property
     def pairs(self):
         return {pair for pair in self._slots if pair}
@@ -77,8 +93,12 @@ class HashTable:
         return len(self._slots)
 
 
-    def _index(self, key) -> int:
-        return hash(key) % self.capacity
+    @classmethod
+    def from_dict(cls, dictionary: dict, capacity: int = None):
+        hash_table = cls(capacity or len(dictionary) * 10)
+        for key, value in dictionary.items():
+            hash_table[key] = value
+        return hash_table
     
 
 if __name__ == "__main__":
