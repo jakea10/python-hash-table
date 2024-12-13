@@ -3,6 +3,9 @@
 from typing import NamedTuple, Any
 
 
+DELETED = object()  # sentinel value for linear probing
+
+
 class Pair(NamedTuple):
     key: Any
     value: Any
@@ -20,14 +23,45 @@ class HashTable:
     
 
     def __setitem__(self, key, value):
-        self._slots[self._index(key)] = Pair(key, value)
+        # self._slots[self._index(key)] = Pair(key, value)
+        for index, pair in self._probe(key):
+            if pair is DELETED: continue  # collsion has occurred before
+            if pair is None or pair.key == key:  # new key or update
+                self._slots[index] = Pair(key, value)
+                break
+        else:
+            raise MemoryError("Not enough capacity")  # exhausted all avail slots
 
 
     def __getitem__(self, key):
-        pair: Pair = self._slots[self._index(key)]
-        if pair is None:
-            raise KeyError(key)
-        return pair.value
+        # pair: Pair = self._slots[self._index(key)]
+        # if pair is None:
+        #     raise KeyError(key)
+        # return pair.value
+        for _, pair in self._probe(key):
+            if pair is None:
+                raise KeyError(key)
+            if pair is DELETED:
+                continue
+            if pair.key == key:
+                return pair.value
+        raise KeyError(key)
+    
+
+    def __delitem__(self, key):
+        # if key in self:
+        #     self._slots[self._index(key)] = None
+        # else:
+        #     raise KeyError(key)
+        for index, pair in self._probe(key):
+            if pair is None:
+                raise KeyError(key)
+            if pair is DELETED:
+                continue
+            if pair.key == key:
+                self._slots[index] = DELETED
+                return
+        raise KeyError(key)
     
 
     def __contains__(self, key):
@@ -37,13 +71,6 @@ class HashTable:
             return False
         else:
             return True
-        
-
-    def __delitem__(self, key):
-        if key in self:
-            self._slots[self._index(key)] = None
-        else:
-            raise KeyError(key)
         
     
     def __iter__(self):
@@ -78,7 +105,7 @@ class HashTable:
         index = self._index(key)
         for _ in range(self.capacity):
             yield index, self._slots[index]
-            index = (index + 1) % self.capacity
+            index = (index + 1) % self.capacity  # modulo wraps index around origin if necessary
 
 
     def get(self, key, default = None):
@@ -98,7 +125,10 @@ class HashTable:
 
     @property
     def pairs(self):
-        return {pair for pair in self._slots if pair}
+        return {
+            pair for pair in self._slots
+            if pair not in (None, DELETED)
+        }
     
 
     @property
@@ -125,10 +155,31 @@ class HashTable:
     
 
 if __name__ == "__main__":
+    # ----------------------------------------------------------
     # ad hoc testing
-    from os import environ
+    # ----------------------------------------------------------
+    # from os import environ
 
-    environ["PYTHONHASHSEED"] = "0"
-    source = {'hello': 'world', 1: 2, True: False}
-    ht = HashTable.from_dict(source, capacity=len(source))
-    print(ht)
+    # environ["PYTHONHASHSEED"] = "0"
+    # source = {'hello': 'world', 1: 2, True: False}
+    # ht = HashTable.from_dict(source, capacity=len(source))
+    # print(ht)
+    from unittest.mock import patch
+
+    with patch('builtins.hash', return_value=24):
+        ht = HashTable(capacity=100)
+        # Test collision handling on create
+        ht['easy'] = 'Requires little effort'
+        ht['medium'] = 'Requires some skill and effort'
+        ht['difficult'] = 'Needs much skill'
+    
+        print(ht._slots[24])
+        print(ht._slots[25])
+        print(ht._slots[26])
+
+        # Test collision handling on delete
+        del ht['medium']
+
+        print(ht._slots[24])
+        print(ht._slots[25])
+        print(ht._slots[26])

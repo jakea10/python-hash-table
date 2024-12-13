@@ -1,6 +1,7 @@
-from hash_table import HashTable
+from hash_table import HashTable, Pair, DELETED
 import pytest
 from pytest_unordered import unordered
+from unittest.mock import patch
 
 
 # def test_should_always_pass():
@@ -306,3 +307,39 @@ def test_should_clear_key_value_pairs(hash_table):
     assert len(hash_table) == 4
     hash_table.clear()
     assert len(hash_table) == 0
+
+
+@pytest.fixture
+def collision_ht() -> HashTable:
+    with patch('builtins.hash', return_value=24):
+        ht = HashTable(capacity=100)
+        ht['easy'] = 'Requires little effort'
+        ht['medium'] = 'Requires some skill and effort'
+        ht['difficult'] = 'Needs much skill'
+    return ht
+
+
+def test_should_handle_collisions_on_create(collision_ht: HashTable):
+    # linear probe
+    assert collision_ht._slots[24] == Pair('easy', 'Requires little effort')
+    assert collision_ht._slots[25] == Pair('medium', 'Requires some skill and effort')
+    assert collision_ht._slots[26] == Pair('difficult', 'Needs much skill')
+
+
+def test_should_handle_collisions_on_read(collision_ht: HashTable):
+    with patch('builtins.hash', return_value=24):
+        assert collision_ht['easy'] == 'Requires little effort'
+        assert collision_ht['medium'] == 'Requires some skill and effort'
+        assert collision_ht['difficult'] == 'Needs much skill'
+
+
+def test_should_handle_collisions_on_update(collision_ht: HashTable):
+    with patch('builtins.hash', return_value=24):
+        collision_ht['difficult'] = 'Requires much skill'
+        assert collision_ht['difficult'] == 'Requires much skill'
+
+
+def test_should_handle_collisions_on_delete(collision_ht: HashTable):
+    with patch('builtins.hash', return_value=24):
+        del collision_ht['medium']
+        assert collision_ht._slots[25] is DELETED
