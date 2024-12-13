@@ -254,7 +254,7 @@ def test_should_create_hash_table_from_dict():
     dictionary = {"hello": "world", 98.6: 37, True: False}
     hash_table: HashTable = HashTable.from_dict(dictionary)
 
-    assert hash_table.capacity == len(dictionary) * 10
+    assert hash_table.capacity == len(dictionary) * 2
     assert hash_table.keys == set(dictionary.keys())
     assert hash_table.pairs == set(dictionary.items())
     assert unordered(hash_table.values) == list(dictionary.values())

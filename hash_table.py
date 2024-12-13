@@ -12,10 +12,17 @@ class Pair(NamedTuple):
 
 
 class HashTable:
-    def __init__(self, capacity: int):
+    def __init__(
+            self,
+            capacity: int = 8,
+            load_factor_threshold: float = 0.6
+        ):
         if isinstance(capacity, bool) or not isinstance(capacity, int) or capacity < 1:
             raise ValueError("Capacity must be a positive integer")
+        if not (0 < load_factor_threshold <= 1):
+            raise ValueError("Load factor must be a number between (0 and 1]")
         self._slots = capacity * [None]
+        self._load_factor_threshold = load_factor_threshold
 
 
     def __len__(self):
@@ -23,16 +30,18 @@ class HashTable:
     
 
     def __setitem__(self, key, value):
-        # self._slots[self._index(key)] = Pair(key, value)
+        if self.load_factor >= self._load_factor_threshold:
+            self._resize_and_rehash()
+
         for index, pair in self._probe(key):
             if pair is DELETED: continue  # collsion has occurred before
             if pair is None or pair.key == key:  # new key or update
                 self._slots[index] = Pair(key, value)
                 break
-        else: # exhausted all avail slots
-            # raise MemoryError("Not enough capacity")
-            self._resize_and_rehash()
-            self[key] = value
+        # else: # exhausted all avail slots
+        #     # raise MemoryError("Not enough capacity")
+        #     self._resize_and_rehash()
+        #     self[key] = value
 
 
     def __getitem__(self, key):
@@ -152,11 +161,17 @@ class HashTable:
     @property
     def capacity(self):
         return len(self._slots)
+    
+
+    @property
+    def load_factor(self):
+        occupied_or_deleted = [slot for slot in self._slots if slot]
+        return len(occupied_or_deleted) / self.capacity
 
 
     @classmethod
     def from_dict(cls, dictionary: dict, capacity: int = None):
-        hash_table = cls(capacity or len(dictionary) * 10)
+        hash_table = cls(capacity or len(dictionary) * 2)
         for key, value in dictionary.items():
             hash_table[key] = value
         return hash_table
@@ -191,9 +206,9 @@ if __name__ == "__main__":
     #     print(ht._slots[24])
     #     print(ht._slots[25])
     #     print(ht._slots[26])
-    ht = HashTable(capacity=1)
+    ht = HashTable()
 
-    for i in range(20):
+    for i in range(50):
         num_pairs = len(ht)
         num_empty = ht.capacity - num_pairs
         print(
