@@ -39,13 +39,6 @@ class HashTable:
             return True
         
 
-    def get(self, key, default = None):
-        try:
-            return self[key]
-        except KeyError:
-            return default
-        
-
     def __delitem__(self, key):
         if key in self:
             self._slots[self._index(key)] = None
@@ -79,6 +72,20 @@ class HashTable:
 
     def _index(self, key) -> int:
         return hash(key) % self.capacity
+
+
+    def _probe(self, key):
+        index = self._index(key)
+        for _ in range(self.capacity):
+            yield index, self._slots[index]
+            index = (index + 1) % self.capacity
+
+
+    def get(self, key, default = None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
     
 
     def copy(self):
@@ -119,11 +126,9 @@ class HashTable:
 
 if __name__ == "__main__":
     # ad hoc testing
-    hash_table = HashTable(capacity=100)
-    hash_table["hello"] = "world"
-    hash_table[98.6] = 37
-    hash_table[True] = False
-    hash_table["key"] = None
+    from os import environ
 
-    for key, value in hash_table.pairs:
-        print(f"key={key}, value={value}")
+    environ["PYTHONHASHSEED"] = "0"
+    source = {'hello': 'world', 1: 2, True: False}
+    ht = HashTable.from_dict(source, capacity=len(source))
+    print(ht)
