@@ -29,8 +29,10 @@ class HashTable:
             if pair is None or pair.key == key:  # new key or update
                 self._slots[index] = Pair(key, value)
                 break
-        else:
-            raise MemoryError("Not enough capacity")  # exhausted all avail slots
+        else: # exhausted all avail slots
+            # raise MemoryError("Not enough capacity")
+            self._resize_and_rehash()
+            self[key] = value
 
 
     def __getitem__(self, key):
@@ -107,6 +109,12 @@ class HashTable:
             yield index, self._slots[index]
             index = (index + 1) % self.capacity  # modulo wraps index around origin if necessary
 
+    def _resize_and_rehash(self):
+        copy = HashTable(capacity=self.capacity * 2)
+        for key, value in self.pairs:
+            copy[key] = value
+        self._slots = copy._slots
+
 
     def get(self, key, default = None):
         try:
@@ -164,22 +172,32 @@ if __name__ == "__main__":
     # source = {'hello': 'world', 1: 2, True: False}
     # ht = HashTable.from_dict(source, capacity=len(source))
     # print(ht)
-    from unittest.mock import patch
+    # from unittest.mock import patch
 
-    with patch('builtins.hash', return_value=24):
-        ht = HashTable(capacity=100)
-        # Test collision handling on create
-        ht['easy'] = 'Requires little effort'
-        ht['medium'] = 'Requires some skill and effort'
-        ht['difficult'] = 'Needs much skill'
+    # with patch('builtins.hash', return_value=24):
+    #     ht = HashTable(capacity=100)
+    #     # Test collision handling on create
+    #     ht['easy'] = 'Requires little effort'
+    #     ht['medium'] = 'Requires some skill and effort'
+    #     ht['difficult'] = 'Needs much skill'
     
-        print(ht._slots[24])
-        print(ht._slots[25])
-        print(ht._slots[26])
+    #     print(ht._slots[24])
+    #     print(ht._slots[25])
+    #     print(ht._slots[26])
 
-        # Test collision handling on delete
-        del ht['medium']
+    #     # Test collision handling on delete
+    #     del ht['medium']
 
-        print(ht._slots[24])
-        print(ht._slots[25])
-        print(ht._slots[26])
+    #     print(ht._slots[24])
+    #     print(ht._slots[25])
+    #     print(ht._slots[26])
+    ht = HashTable(capacity=1)
+
+    for i in range(20):
+        num_pairs = len(ht)
+        num_empty = ht.capacity - num_pairs
+        print(
+            f"{num_pairs:>2}/{ht.capacity:>2}",
+            ("▣ " * num_pairs) + ("□ " * num_empty)
+        )
+        ht[i] = i
