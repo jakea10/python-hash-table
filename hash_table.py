@@ -69,8 +69,24 @@ class HashTable:
         return f"{cls}.from_dict({str(self)})"
     
 
+    def __eq__(self, other):
+        if self is other:  # same id()
+            return True
+        if type(self) is not type(other):
+            return False
+        return set(self.pairs) == set(other.pairs)
+    
+
     def _index(self, key) -> int:
         return hash(key) % self.capacity
+    
+
+    def copy(self):
+        return HashTable.from_dict(dict(self.pairs), self.capacity)
+    
+
+    def clear(self):
+        self._slots = self.capacity * [None]
     
 
     @property
