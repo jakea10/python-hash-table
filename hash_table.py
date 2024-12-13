@@ -38,17 +38,9 @@ class HashTable:
             if pair is None or pair.key == key:  # new key or update
                 self._slots[index] = Pair(key, value)
                 break
-        # else: # exhausted all avail slots
-        #     # raise MemoryError("Not enough capacity")
-        #     self._resize_and_rehash()
-        #     self[key] = value
 
 
     def __getitem__(self, key):
-        # pair: Pair = self._slots[self._index(key)]
-        # if pair is None:
-        #     raise KeyError(key)
-        # return pair.value
         for _, pair in self._probe(key):
             if pair is None:
                 raise KeyError(key)
@@ -60,10 +52,6 @@ class HashTable:
     
 
     def __delitem__(self, key):
-        # if key in self:
-        #     self._slots[self._index(key)] = None
-        # else:
-        #     raise KeyError(key)
         for index, pair in self._probe(key):
             if pair is None:
                 raise KeyError(key)
@@ -181,31 +169,8 @@ if __name__ == "__main__":
     # ----------------------------------------------------------
     # ad hoc testing
     # ----------------------------------------------------------
-    # from os import environ
 
-    # environ["PYTHONHASHSEED"] = "0"
-    # source = {'hello': 'world', 1: 2, True: False}
-    # ht = HashTable.from_dict(source, capacity=len(source))
-    # print(ht)
-    # from unittest.mock import patch
-
-    # with patch('builtins.hash', return_value=24):
-    #     ht = HashTable(capacity=100)
-    #     # Test collision handling on create
-    #     ht['easy'] = 'Requires little effort'
-    #     ht['medium'] = 'Requires some skill and effort'
-    #     ht['difficult'] = 'Needs much skill'
-    
-    #     print(ht._slots[24])
-    #     print(ht._slots[25])
-    #     print(ht._slots[26])
-
-    #     # Test collision handling on delete
-    #     del ht['medium']
-
-    #     print(ht._slots[24])
-    #     print(ht._slots[25])
-    #     print(ht._slots[26])
+    # Visualize dynamic resizing
     ht = HashTable()
 
     for i in range(50):
